@@ -6,6 +6,13 @@ export const signupUser = async (req, res) => {
   try {
     const { fullName, username, password, confirmPassword, gender } = req.body;
 
+    if (!fullName || !username || !password || !confirmPassword || !gender) {
+      return res.status(400).json({
+        error:
+          "لطفا تمام مقادیر مورد نیاز را ارسال کنید: نام، نام کاربری، رمز عبور، تکرار رمز عبور و جنسیت!",
+      });
+    }
+
     if (password !== confirmPassword) {
       return res.status(400).json({ error: "رمز عبور یکسان نیست!" });
     }
@@ -54,10 +61,42 @@ export const signupUser = async (req, res) => {
   }
 };
 
-export const loginUser = (req, res) => {
-  res.send("Login Route");
+export const loginUser = async (req, res) => {
+  try {
+    const { username, password } = req.body;
+    const user = await User.findOne({ username });
+
+    const isPasswordCorrect = await bcrypt.compare(
+      password,
+      user?.password || ""
+    );
+
+    if (!isPasswordCorrect || !user) {
+      res.status(400).json({ error: "نام کاربری یا رمز عبور اشتباه است!" });
+    }
+
+    generateTokenAndSetCookie(user._id, res);
+
+    res.status(200).json({
+      id: user._id,
+      fullName: user.fullName,
+      username: user.username,
+      profilePic: user.profilePic,
+    });
+  } catch (err) {
+    console.log("Error in login controller: ", err.message);
+    res.status(500).json({ error: "مشکل شبکه پیش آمده!" });
+  }
 };
 
-export const logoutUser = (req, res) => {
-  res.send("Login Route");
+export const logoutUser = async (req, res) => {
+  try {
+    res.cookie("jwt", "", { maxAge: 0 });
+    res
+      .status(200)
+      .json({ message: "با موفقیت از حساب کاربری خود خارج شدید." });
+  } catch (err) {
+    console.log("Error in logout controller: ", err.message);
+    res.status(500).json({ error: "مشکل شبکه پیش آمده!" });
+  }
 };
