@@ -57,7 +57,7 @@ export const signupUser = async (req, res) => {
     }
   } catch (err) {
     console.log("Error in signup controller: ", err.message);
-    res.status(500).json({ error: "مشکل شبکه پیش آمده!" });
+    res.status(500).json({ error: "خطای سرور داخلی رخ داده است!" });
   }
 };
 
@@ -85,11 +85,11 @@ export const loginUser = async (req, res) => {
     });
   } catch (err) {
     console.log("Error in login controller: ", err.message);
-    res.status(500).json({ error: "مشکل شبکه پیش آمده!" });
+    res.status(500).json({ error: "خطای سرور داخلی رخ داده است!" });
   }
 };
 
-export const logoutUser = async (req, res) => {
+export const logoutUser = (req, res) => {
   try {
     res.cookie("jwt", "", { maxAge: 0 });
     res
@@ -97,6 +97,6 @@ export const logoutUser = async (req, res) => {
       .json({ message: "با موفقیت از حساب کاربری خود خارج شدید." });
   } catch (err) {
     console.log("Error in logout controller: ", err.message);
-    res.status(500).json({ error: "مشکل شبکه پیش آمده!" });
+    res.status(500).json({ error: "خطای سرور داخلی رخ داده است!" });
   }
 };
