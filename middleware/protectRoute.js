@@ -17,7 +17,7 @@ const protectRoute = async (req, res, next) => {
       return res.status(401).json({ error: "غیر مجاز - توکن نامعتبر است!" });
     }
 
-    const user = await User.findById(decoded.userId).select("-passwors");
+    const user = await User.findById(decoded.userId).select("-password");
     if (!user) {
       return res.status(401).json({ error: "چنین کاربری موجود نیست!" });
     }
