@@ -4,6 +4,7 @@ import User from "../models/user.model.js";
 const protectRoute = async (req, res, next) => {
   try {
     const token = req.cookies.jwt;
+    // console.log(req.cookies.jwt)
 
     if (!token) {
       return res
@@ -17,12 +18,13 @@ const protectRoute = async (req, res, next) => {
       return res.status(401).json({ error: "غیر مجاز - توکن نامعتبر است!" });
     }
 
-    const user = await User.findById(decoded.userId).select("-password");
+    const user = await User.findById(decoded.userId)
     if (!user) {
       return res.status(401).json({ error: "چنین کاربری موجود نیست!" });
     }
 
-    req.usr = user;
+    req.user = user._id;
+    // console.log(user);
 
     next();
   } catch (err) {
