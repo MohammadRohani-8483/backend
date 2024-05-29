@@ -5,6 +5,7 @@ import cookieParser from "cookie-parser";
 
 import authRoutes from "./routes/auth.routes.js";
 import messageRoutes from "./routes/message.routes.js";
+import userRoutes from "./routes/user.routes.js";
 
 dotenv.config();
 
@@ -20,6 +21,7 @@ app.get("/", (req, res) => {
 
 app.use("/api/auth", authRoutes);
 app.use("/api/messages", messageRoutes);
+app.use("/api/users", userRoutes);
 
 mongoose
   .connect(process.env.MONGO_DB_URI)
@@ -28,5 +30,5 @@ mongoose
     app.listen(PORT, () => console.log(`Server running on port ${PORT} :)`));
   })
   .catch((err) => {
-    console.log("Error connectiong to MongoDB: ", err.message);
+    console.error("Error connectiong to MongoDB: ", err.message);
   });

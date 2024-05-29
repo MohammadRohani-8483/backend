@@ -56,7 +56,7 @@ export const signupUser = async (req, res) => {
       res.status(400).json({ error: "داده های کاربر نامعتبراست !" });
     }
   } catch (err) {
-    console.log("Error in signup controller: ", err.message);
+    console.error("Error in signup controller: ", err.message);
     res.status(500).json({ error: "خطای سرور داخلی رخ داده است!" });
   }
 };
@@ -84,7 +84,7 @@ export const loginUser = async (req, res) => {
       profilePic: user.profilePic,
     });
   } catch (err) {
-    console.log("Error in login controller: ", err.message);
+    console.error("Error in login controller: ", err.message);
     res.status(500).json({ error: "خطای سرور داخلی رخ داده است!" });
   }
 };
@@ -96,7 +96,7 @@ export const logoutUser = (req, res) => {
       .status(200)
       .json({ message: "با موفقیت از حساب کاربری خود خارج شدید." });
   } catch (err) {
-    console.log("Error in logout controller: ", err.message);
+    console.error("Error in logout controller: ", err.message);
     res.status(500).json({ error: "خطای سرور داخلی رخ داده است!" });
   }
 };

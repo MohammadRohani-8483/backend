@@ -4,7 +4,6 @@ import User from "../models/user.model.js";
 const protectRoute = async (req, res, next) => {
   try {
     const token = req.cookies.jwt;
-    // console.log(req.cookies.jwt)
 
     if (!token) {
       return res
@@ -23,12 +22,11 @@ const protectRoute = async (req, res, next) => {
       return res.status(401).json({ error: "چنین کاربری موجود نیست!" });
     }
 
-    req.user = user._id;
-    // console.log(user);
+    req.user = user
 
     next();
   } catch (err) {
-    console.log("Error in protect route middleware: ", err.message);
+    console.error("Error in protect route middleware: ", err.message);
     res.status(500).json({ error: "خطای سرور داخلی رخ داده است!" });
   }
 };
