@@ -72,7 +72,9 @@ export const loginUser = async (req, res) => {
     );
 
     if (!isPasswordCorrect || !user) {
-      res.status(400).json({ error: "نام کاربری یا رمز عبور اشتباه است!" });
+      return res
+        .status(400)
+        .json({ error: "نام کاربری یا رمز عبور اشتباه است!" });
     }
 
     generateTokenAndSetCookie(user._id, res);
