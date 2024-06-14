@@ -42,7 +42,8 @@ export const signupUser = async (req, res) => {
 
     if (newUser) {
       // Generate JWT token
-      generateTokenAndSetCookie(newUser._id, res);
+      generateTokenAndSetCookie(user._id, res, access_chat, 2);
+      generateTokenAndSetCookie(user._id, res, refresh_chat, 365);
 
       await newUser.save();
 
@@ -77,7 +78,8 @@ export const loginUser = async (req, res) => {
         .json({ error: "نام کاربری یا رمز عبور اشتباه است!" });
     }
 
-    generateTokenAndSetCookie(user._id, res);
+    generateTokenAndSetCookie(user._id, res, "access_chat", 2);
+    generateTokenAndSetCookie(user._id, res, "refresh_chat", 365);
 
     res.status(200).json({
       id: user._id,
@@ -93,10 +95,31 @@ export const loginUser = async (req, res) => {
 
 export const logoutUser = (req, res) => {
   try {
-    res.cookie("jwt", "", { maxAge: 0 });
+    res.cookie("access_chat", "", { maxAge: 0 });
+    res.cookie("refresh_chat", "", { maxAge: 0 });
     res
       .status(200)
       .json({ message: "با موفقیت از حساب کاربری خود خارج شدید." });
+  } catch (err) {
+    console.error("Error in logout controller: ", err.message);
+    res.status(500).json({ error: "خطای سرور داخلی رخ داده است!" });
+  }
+};
+
+export const refreshToken = async (req, res) => {
+  try {
+    const { username } = req.body;
+    const user = await User.findOne({ username });
+
+    if (!user) {
+      return res.status(400).json({ error: "نام کاربری اشتباه است!" });
+    }
+
+    generateTokenAndSetCookie(user._id, res, "access_chat", 2);
+
+    res
+      .status(200)
+      .json({ message: "کوکی جدید ست شد" });
   } catch (err) {
     console.error("Error in logout controller: ", err.message);
     res.status(500).json({ error: "خطای سرور داخلی رخ داده است!" });
