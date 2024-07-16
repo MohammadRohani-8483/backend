@@ -7,6 +7,7 @@ import authRoutes from "./routes/auth.routes.js";
 import messageRoutes from "./routes/message.routes.js";
 import userRoutes from "./routes/user.routes.js";
 import getMeRoutes from "./routes/me.routes.js";
+import conversationRoutes from "./routes/conversation.routes.js";
 import { app, server } from "./socket/socket.js";
 
 dotenv.config();
@@ -25,6 +26,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/messages", messageRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/me", getMeRoutes);
+app.use("/api/conversation", conversationRoutes);
 
 mongoose
   .connect(process.env.MONGO_DB_URI)

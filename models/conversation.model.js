@@ -8,16 +8,15 @@ const conversationSchema = new mongoose.Schema(
         ref: "User",
       },
     ],
-    messages: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Message",
-        default: [],
-      },
-    ],
   },
-  { timestamps: true }
+  { timestamps: true, toJSON: { virtuals: true } }
 );
+
+conversationSchema.virtual("messages", {
+  ref: "Message",
+  foreignField: "chatId",
+  localField: "_id",
+});
 
 const Conversation = mongoose.model("Conversation", conversationSchema);
 

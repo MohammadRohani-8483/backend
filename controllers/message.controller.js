@@ -8,23 +8,29 @@ export const sendMessage = async (req, res) => {
     const { id: receiverId } = req.params;
     const senderId = req.user._id;
 
-    let conversation = await Conversation.findOne({
-      participants: [senderId, receiverId],
-    });
+    const sortArr = [senderId, receiverId].sort();
+
+    let conversation = await Conversation.findOneAndUpdate(
+      {
+        participants: sortArr,
+      },
+      { updatedAt: new Date() }
+    );
 
     if (!conversation) {
       conversation = await Conversation.create({
-        participants: [senderId, receiverId],
+        participants: sortArr,
       });
     }
 
     const newMessage = new Message({
       senderId,
-      receiverId,
+      chatId: conversation._id,
       message,
+      seen: false,
     });
 
-    newMessage && conversation.messages.push(newMessage._id);
+    // newMessage && conversation.messages.push(newMessage._id);
 
     // await conversation.save();
     // await newMessage.save();
@@ -43,25 +49,54 @@ export const sendMessage = async (req, res) => {
   }
 };
 
-export const getMessages = async (req, res) => {
+export const getMessages = async (req, res, next) => {
   try {
     const { id: userToChatId } = req.params;
-    const senderId = req.user._id;
+    const me = req.user._id;
 
-    const conversation1 = await Conversation.findOne({
-      participants: [senderId, userToChatId],
-    }).populate("messages");
-    const conversation2 = await Conversation.findOne({
-      participants: [userToChatId, senderId],
-    }).populate("messages");
+    const sortArr = [me, userToChatId].sort();
+    console.log(sortArr);
 
-    res
-      .status(200)
-      .json([
-        ...(conversation1?.messages || []),
-        ...(conversation2?.messages || []),
-      ]);
+    const conversation = await Conversation.findOne({
+      participants: sortArr,
+    })
+      .populate("messages")
+      .sort({ createdAt: -1 });
+
+    conversation?.messages.forEach(async () => {
+      await Message.findOneAndUpdate(
+        { senderId: userToChatId },
+        {
+          seen: true,
+        }
+      );
+    });
+
+    return res.status(200).json(conversation?.messages || []);
+    // const conversation2 = await Conversation.findOne({
+    //   participants: [userToChatId, me],
+    // })
+    //   .populate("messages")
+    //   .sort({ createdAt: -1 });
+
+    // const result = [
+    //   ...(conversation1?.messages || []),
+    //   ...(conversation2?.messages || []),
+    // ].sort((a, b) => {
+    //   var dateA = new Date(a.createdAt).getTime();
+    //   var dateB = new Date(b.createdAt).getTime();
+    //   return dateA > dateB ? 1 : -1;
+    // });
+
+    // conversation2?.forEach(async (message) => {
+    //   const seenMessage = await Message.findByIdAndUpdate(message._id, {
+    //     seen: true,
+    //   });
+    // });
+
+    // res.status(200).json(result);
   } catch (err) {
+    // next(err);
     console.error("Error in get messages controller: ", err.message);
     res.status(500).json({ error: "خطای سرور داخلی رخ داده است!" });
   }

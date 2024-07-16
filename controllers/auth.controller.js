@@ -1,6 +1,7 @@
 import User from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 import generateTokenAndSetCookie from "../utils/generateToken.js";
+import jwt from "jsonwebtoken";
 
 export const signupUser = async (req, res) => {
   try {
@@ -43,7 +44,7 @@ export const signupUser = async (req, res) => {
     if (newUser) {
       // Generate JWT token
       generateTokenAndSetCookie(user._id, res, access_chat, 2);
-      generateTokenAndSetCookie(user._id, res, refresh_chat, 365);
+      generateTokenAndSetCookie(user._id, res, refresh_chat, 365, true);
 
       await newUser.save();
 
@@ -79,7 +80,7 @@ export const loginUser = async (req, res) => {
     }
 
     generateTokenAndSetCookie(user._id, res, "access_chat", 2);
-    generateTokenAndSetCookie(user._id, res, "refresh_chat", 365);
+    generateTokenAndSetCookie(user._id, res, "refresh_chat", 365, true);
 
     res.status(200).json({
       id: user._id,
@@ -108,18 +109,33 @@ export const logoutUser = (req, res) => {
 
 export const refreshToken = async (req, res) => {
   try {
-    const { username } = req.body;
-    const user = await User.findOne({ username });
+    const refresh = req.cookies.refresh_chat;
 
-    if (!user) {
-      return res.status(400).json({ error: "نام کاربری اشتباه است!" });
+    if (!refresh) {
+      return res
+        .status(400)
+        .json({ error: "غیر مجاز - هیچ توکنی ارائه نشده است!" });
     }
 
-    generateTokenAndSetCookie(user._id, res, "access_chat", 2);
+    const decoded = jwt.verify(refresh, process.env.REFRESH_SECRET);
 
-    res
-      .status(200)
-      .json({ message: "کوکی جدید ست شد" });
+    if (!decoded) {
+      return res.status(400).json({ error: "غیر مجاز - توکن نامعتبر است!" });
+    }
+
+    const user = await User.findById(decoded.userId);
+    if (!user) {
+      return res.status(404).json({ error: "چنین کاربری موجود نیست!" });
+    }
+
+    const newAccess = generateTokenAndSetCookie(
+      user._id,
+      res,
+      "access_chat",
+      2
+    );
+
+    res.status(200).json({ access_chat: newAccess });
   } catch (err) {
     console.error("Error in logout controller: ", err.message);
     res.status(500).json({ error: "خطای سرور داخلی رخ داده است!" });
